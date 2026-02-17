@@ -1448,77 +1448,109 @@
             document.getElementById('installButton').classList.remove('visible');
         });
 
-        // Terabox Function
-        window.playFromTerabox = async function(teraboxUrl, movieTitle) {
-            let teraboxPlayer = document.getElementById('teraboxPlayer');
-            let playerContainer = document.getElementById('playerContainer');
-            
-            const movieDetail = document.getElementById('movieDetail');
-            const detailContent = document.getElementById('movieDetailContent');
-            
-            if (!teraboxPlayer) {
-                teraboxPlayer = document.createElement('div');
-                teraboxPlayer.className = 'terabox-player';
-                teraboxPlayer.id = 'teraboxPlayer';
-                teraboxPlayer.innerHTML = `
-                    <h3><i class="fas fa-cloud"></i> Terabox Stream: ${movieTitle}</h3>
-                    <div class="player-container" id="playerContainer">
-                        <div class="loading-spinner"><i class="fas fa-spinner"></i><p>Loading Terabox video...</p></div>
-                    </div>
-                `;
-                
-                const gallerySection = detailContent.querySelector('.gallery-section');
-                if (gallerySection) gallerySection.after(teraboxPlayer);
-                else detailContent.appendChild(teraboxPlayer);
-                
-                playerContainer = document.getElementById('playerContainer');
-            } else {
-                teraboxPlayer.style.display = 'block';
-                if (playerContainer) playerContainer.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner"></i><p>Loading Terabox video...</p></div>`;
-            }
+        // ========== UPDATED TERABOX FUNCTION (FAST BROWSER REDIRECT) ==========
+window.playFromTerabox = async function(teraboxUrl, movieTitle) {
+    let teraboxPlayer = document.getElementById('teraboxPlayer');
+    let playerContainer = document.getElementById('playerContainer');
+    
+    const movieDetail = document.getElementById('movieDetail');
+    const detailContent = document.getElementById('movieDetailContent');
+    
+    if (!teraboxPlayer) {
+        teraboxPlayer = document.createElement('div');
+        teraboxPlayer.className = 'terabox-player';
+        teraboxPlayer.id = 'teraboxPlayer';
+        teraboxPlayer.innerHTML = `
+            <h3><i class="fas fa-cloud"></i> Terabox Stream: ${movieTitle}</h3>
+            <div class="player-container" id="playerContainer">
+                <div style="text-align:center; padding:30px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:40px; color:#FF416C; margin-bottom:15px;"></i>
+                    <p>Loading Terabox video...</p>
+                    <p style="font-size:13px; color:#8f9bb3; margin-top:10px;">
+                        <i class="fas fa-info-circle"></i> 
+                        If video doesn't load in 5 seconds, use the browser button above
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        const gallerySection = detailContent.querySelector('.gallery-section');
+        if (gallerySection) gallerySection.after(teraboxPlayer);
+        else detailContent.appendChild(teraboxPlayer);
+        
+        playerContainer = document.getElementById('playerContainer');
+    } else {
+        teraboxPlayer.style.display = 'block';
+        playerContainer.innerHTML = `
+            <div style="text-align:center; padding:30px;">
+                <i class="fas fa-spinner fa-spin" style="font-size:40px; color:#FF416C; margin-bottom:15px;"></i>
+                <p>Loading Terabox video...</p>
+                <p style="font-size:13px; color:#8f9bb3; margin-top:10px;">
+                    <i class="fas fa-info-circle"></i> 
+                    If video doesn't load in 5 seconds, use the browser button above
+                </p>
+            </div>
+        `;
+    }
 
-            const actionButtons = document.querySelector('.action-buttons');
-            const existingBrowserBtn = document.getElementById('browserButton');
-            if (actionButtons && !existingBrowserBtn) {
-                const browserBtn = document.createElement('button');
-                browserBtn.id = 'browserButton';
-                browserBtn.className = 'btn btn-browser';
-                browserBtn.innerHTML = '<i class="fas fa-globe"></i> Open in Browser';
-                browserBtn.onclick = () => window.open(teraboxUrl, '_blank');
-                actionButtons.appendChild(browserBtn);
-            }
-
-            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));
-            const apiPromises = [
-                fetch(`https://api.terabox.xyz/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
-                fetch(`https://terabox.udayscriptsx.workers.dev/?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
-                fetch(`https://terabox-dl.vercel.app/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
-                fetch(`https://terabox.deno.dev/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json())
-            ];
-
-            try {
-                const data = await Promise.race([Promise.any(apiPromises), timeoutPromise]);
-                let directLink = data.direct_link || data.url || data.download_link || data.data?.direct_link;
-                
-                if (directLink && playerContainer) {
-                    playerContainer.innerHTML = `<video controls autoplay style="width:100%; border-radius:12px;"><source src="${directLink}" type="video/mp4"></video>`;
-                    return;
-                }
-            } catch (error) { console.log('All APIs failed:', error); }
-
-            if (playerContainer) {
-                playerContainer.innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Direct play unavailable.</p>
-                        <p style="font-size:12px; margin:10px 0;">Click below to open in browser:</p>
-                        <button onclick="window.open('${teraboxUrl}', '_blank')" style="padding:12px 25px; background:linear-gradient(135deg,#00b09b,#96c93d); color:white; border:none; border-radius:8px; cursor:pointer;">
-                            <i class="fas fa-external-link-alt"></i> Open in Browser Now
-                        </button>
-                    </div>
-                `;
-            }
+    const actionButtons = document.querySelector('.action-buttons');
+    
+    // Browser button টা ইতিমধ্যে থাকলে remove করে আবার add করব না
+    const existingBrowserBtn = document.getElementById('browserButton');
+    if (actionButtons && !existingBrowserBtn) {
+        const browserBtn = document.createElement('button');
+        browserBtn.id = 'browserButton';
+        browserBtn.className = 'btn btn-browser';
+        browserBtn.innerHTML = '<i class="fas fa-globe"></i> Open in Browser';
+        browserBtn.style.marginTop = '10px';
+        browserBtn.onclick = () => {
+            window.open(teraboxUrl, '_blank');
         };
+        actionButtons.appendChild(browserBtn);
+    }
+
+    // 3 seconds timeout for APIs
+    const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 3000)
+    );
+
+    // Try APIs in parallel
+    const apiPromises = [
+        fetch(`https://api.terabox.xyz/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()).catch(() => null),
+        fetch(`https://terabox.udayscriptsx.workers.dev/?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()).catch(() => null),
+        fetch(`https://terabox-dl.vercel.app/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()).catch(() => null)
+    ];
+
+    try {
+        const data = await Promise.race([Promise.any(apiPromises.filter(p => p !== null)), timeoutPromise]);
+        let directLink = data?.direct_link || data?.url || data?.download_link || data?.data?.direct_link;
+        
+        if (directLink && playerContainer) {
+            playerContainer.innerHTML = `
+                <video controls autoplay style="width:100%; border-radius:12px;">
+                    <source src="${directLink}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+            return;
+        }
+    } catch (error) {
+        console.log('API failed or timeout:', error);
+    }
+
+    // After timeout, keep the player showing with message
+    if (playerContainer) {
+        playerContainer.innerHTML = `
+            <div class="error-message" style="text-align:center; padding:30px;">
+                <i class="fas fa-exclamation-circle" style="font-size:40px; color:#FF416C; margin-bottom:15px;"></i>
+                <p>Direct play unavailable</p>
+                <p style="font-size:13px; color:#8f9bb3; margin:15px 0;">
+                    Click the <b>"Open in Browser"</b> button above to watch
+                </p>
+            </div>
+        `;
+    }
+};
 
         window.showMovieDetail = function(movieId) {
             const movie = allMovies.find(m => m.id === movieId);
