@@ -162,6 +162,60 @@
             font-size: 13px;
         }
 
+        /* নতুন: হেডার অ্যাকশন বাটন (টেলিগ্রাম + ইনস্টল) */
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .btn-telegram {
+            background: #0088cc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-telegram:hover {
+            background: #0077b5;
+            transform: translateY(-2px);
+        }
+
+        .btn-install {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none; /* শুরুতে লুকানো থাকবে, JavaScript দেখাবে */
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-install:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-install.visible {
+            display: inline-flex;
+        }
+
         .header-actions {
             display: flex;
             gap: 10px;
@@ -867,6 +921,10 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+
+            .header-buttons {
+                justify-content: flex-start;
+            }
             
             .header-actions {
                 flex-direction: column;
@@ -1019,6 +1077,16 @@
                 <p>Discover the best movies</p>
             </div>
             
+            <!-- নতুন: টেলিগ্রাম ও ইনস্টল বাটন -->
+            <div class="header-buttons">
+                <a href="https://t.me/factdosehindi" target="_blank" class="btn-telegram">
+                    <i class="fab fa-telegram-plane"></i> Join Telegram
+                </a>
+                <button id="installButton" class="btn-install">
+                    <i class="fas fa-download"></i> Install App
+                </button>
+            </div>
+            
             <div class="header-actions">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
@@ -1095,14 +1163,14 @@
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-  apiKey: "AIzaSyA0i1cbM5q36CeDaEXkEo0TYNA8qY1jPX4",
-  authDomain: "akmovix.firebaseapp.com",
-  projectId: "akmovix",
-  storageBucket: "akmovix.firebasestorage.app",
-  messagingSenderId: "561550827647",
-  appId: "1:561550827647:web:010a473992572485fe1f4a",
-  measurementId: "G-6P3MGPFJDH"
-};
+            apiKey: "AIzaSyA0i1cbM5q36CeDaEXkEo0TYNA8qY1jPX4",
+            authDomain: "akmovix.firebaseapp.com",
+            projectId: "akmovix",
+            storageBucket: "akmovix.firebasestorage.app",
+            messagingSenderId: "561550827647",
+            appId: "1:561550827647:web:010a473992572485fe1f4a",
+            measurementId: "G-6P3MGPFJDH"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -1216,122 +1284,141 @@
             displayMovies(filtered);
         }
 
+        // ========== PWA Install Button Logic ==========
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installButton = document.getElementById('installButton');
+            if (installButton) {
+                installButton.classList.add('visible');
+            }
+        });
+
+        document.getElementById('installButton')?.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                alert('You can install this app from your browser menu (Share → Add to Home Screen)');
+                return;
+            }
+            
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+            document.getElementById('installButton').classList.remove('visible');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            document.getElementById('installButton').classList.remove('visible');
+        });
+
         // ========== OPTIMIZED TERABOX FUNCTION (FASTER) ==========
-window.playFromTerabox = async function(teraboxUrl, movieTitle) {
-    // Terabox Player Div তৈরি করুন
-    let teraboxPlayer = document.getElementById('teraboxPlayer');
-    let playerContainer = document.getElementById('playerContainer');
-    
-    const movieDetail = document.getElementById('movieDetail');
-    const detailContent = document.getElementById('movieDetailContent');
-    
-    // যদি Terabox Player না থাকে, তাহলে নতুন করে তৈরি করুন
-    if (!teraboxPlayer) {
-        teraboxPlayer = document.createElement('div');
-        teraboxPlayer.className = 'terabox-player';
-        teraboxPlayer.id = 'teraboxPlayer';
-        teraboxPlayer.innerHTML = `
-            <h3>
-                <i class="fas fa-cloud"></i>
-                Terabox Stream: ${movieTitle}
-            </h3>
-            <div class="player-container" id="playerContainer">
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner"></i>
-                    <p>Loading Terabox video...</p>
-                </div>
-            </div>
-        `;
-        
-        // Screenshots gallery এর পরে বসান
-        const gallerySection = detailContent.querySelector('.gallery-section');
-        if (gallerySection) {
-            gallerySection.after(teraboxPlayer);
-        } else {
-            detailContent.appendChild(teraboxPlayer);
-        }
-        
-        playerContainer = document.getElementById('playerContainer');
-    } else {
-        // আগে থেকে থাকলে দেখান এবং লোডিং দেখান
-        teraboxPlayer.style.display = 'block';
-        if (playerContainer) {
-            playerContainer.innerHTML = `
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner"></i>
-                    <p>Loading Terabox video...</p>
-                </div>
-            `;
-        }
-    }
+        window.playFromTerabox = async function(teraboxUrl, movieTitle) {
+            let teraboxPlayer = document.getElementById('teraboxPlayer');
+            let playerContainer = document.getElementById('playerContainer');
+            
+            const movieDetail = document.getElementById('movieDetail');
+            const detailContent = document.getElementById('movieDetailContent');
+            
+            if (!teraboxPlayer) {
+                teraboxPlayer = document.createElement('div');
+                teraboxPlayer.className = 'terabox-player';
+                teraboxPlayer.id = 'teraboxPlayer';
+                teraboxPlayer.innerHTML = `
+                    <h3>
+                        <i class="fas fa-cloud"></i>
+                        Terabox Stream: ${movieTitle}
+                    </h3>
+                    <div class="player-container" id="playerContainer">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner"></i>
+                            <p>Loading Terabox video...</p>
+                        </div>
+                    </div>
+                `;
+                
+                const gallerySection = detailContent.querySelector('.gallery-section');
+                if (gallerySection) {
+                    gallerySection.after(teraboxPlayer);
+                } else {
+                    detailContent.appendChild(teraboxPlayer);
+                }
+                
+                playerContainer = document.getElementById('playerContainer');
+            } else {
+                teraboxPlayer.style.display = 'block';
+                if (playerContainer) {
+                    playerContainer.innerHTML = `
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner"></i>
+                            <p>Loading Terabox video...</p>
+                        </div>
+                    `;
+                }
+            }
 
-    // সাথে সাথে "Open in Browser" বাটন দেখান (লোডিং এর সময়ই)
-    const actionButtons = document.querySelector('.action-buttons');
-    
-    // চেক করুন যে বাটন আগে থেকে আছে কিনা
-    const existingBrowserBtn = document.getElementById('browserButton');
-    if (actionButtons && !existingBrowserBtn) {
-        const browserBtn = document.createElement('button');
-        browserBtn.id = 'browserButton';
-        browserBtn.className = 'btn btn-browser';
-        browserBtn.innerHTML = '<i class="fas fa-globe"></i> Open in Browser';
-        browserBtn.onclick = () => window.open(teraboxUrl, '_blank');
-        actionButtons.appendChild(browserBtn);
-    }
+            const actionButtons = document.querySelector('.action-buttons');
+            
+            const existingBrowserBtn = document.getElementById('browserButton');
+            if (actionButtons && !existingBrowserBtn) {
+                const browserBtn = document.createElement('button');
+                browserBtn.id = 'browserButton';
+                browserBtn.className = 'btn btn-browser';
+                browserBtn.innerHTML = '<i class="fas fa-globe"></i> Open in Browser';
+                browserBtn.onclick = () => window.open(teraboxUrl, '_blank');
+                actionButtons.appendChild(browserBtn);
+            }
 
-    // 2 সেকেন্ড টাইমআউট - এর মধ্যে API কাজ না করলে সরাসরি ব্রাউজার অপশন দেখাবে
-    const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 2000)
-    );
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 2000)
+            );
 
-    // প্যারালাল API কল (একসাথে সবগুলো) - এখানে API গুলো ঠিক করে দিলাম
-    const apiPromises = [
-        fetch(`https://api.terabox.xyz/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
-        fetch(`https://terabox.udayscriptsx.workers.dev/?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
-        fetch(`https://terabox-dl.vercel.app/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
-        fetch(`https://terabox.deno.dev/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json())
-    ];
+            const apiPromises = [
+                fetch(`https://api.terabox.xyz/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
+                fetch(`https://terabox.udayscriptsx.workers.dev/?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
+                fetch(`https://terabox-dl.vercel.app/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json()),
+                fetch(`https://terabox.deno.dev/api?url=${encodeURIComponent(teraboxUrl)}`).then(r => r.json())
+            ];
 
-    try {
-        // রেস মেকানিজম - যে API আগে রেস্পন্স দিবে সেটা নিবে
-        const data = await Promise.race([Promise.any(apiPromises), timeoutPromise]);
-        
-        let directLink = null;
-        
-        // বিভিন্ন ফরম্যাট চেক করুন
-        if (data.direct_link) directLink = data.direct_link;
-        else if (data.url) directLink = data.url;
-        else if (data.download_link) directLink = data.download_link;
-        else if (data.data?.direct_link) directLink = data.data?.direct_link;
+            try {
+                const data = await Promise.race([Promise.any(apiPromises), timeoutPromise]);
+                
+                let directLink = null;
+                
+                if (data.direct_link) directLink = data.direct_link;
+                else if (data.url) directLink = data.url;
+                else if (data.download_link) directLink = data.download_link;
+                else if (data.data?.direct_link) directLink = data.data?.direct_link;
 
-        if (directLink && playerContainer) {
-            playerContainer.innerHTML = `
-                <video controls autoplay style="width: 100%; border-radius: 12px;">
-                    <source src="${directLink}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            `;
-            return; // সফল হলে ফাংশন এখানেই শেষ
-        }
-    } catch (error) {
-        console.log('All APIs failed or timeout:', error);
-    }
+                if (directLink && playerContainer) {
+                    playerContainer.innerHTML = `
+                        <video controls autoplay style="width: 100%; border-radius: 12px;">
+                            <source src="${directLink}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                    return;
+                }
+            } catch (error) {
+                console.log('All APIs failed or timeout:', error);
+            }
 
-    // টাইমআউট বা কোনো API কাজ না করলে দ্রুত মেসেজ দেখান
-    if (playerContainer) {
-        playerContainer.innerHTML = `
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Direct play unavailable.</p>
-                <p style="font-size: 12px; margin: 10px 0;">Click below to open in browser:</p>
-                <button onclick="window.open('${teraboxUrl}', '_blank')" 
-                        style="padding: 12px 25px; background: linear-gradient(135deg, #00b09b, #96c93d); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
-                    <i class="fas fa-external-link-alt"></i> Open in Browser Now
-                </button>
-            </div>
-        `;
-    }
-};
+            if (playerContainer) {
+                playerContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Direct play unavailable.</p>
+                        <p style="font-size: 12px; margin: 10px 0;">Click below to open in browser:</p>
+                        <button onclick="window.open('${teraboxUrl}', '_blank')" 
+                                style="padding: 12px 25px; background: linear-gradient(135deg, #00b09b, #96c93d); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-external-link-alt"></i> Open in Browser Now
+                        </button>
+                    </div>
+                `;
+            }
+        };
 
         window.showMovieDetail = function(movieId) {
             const movie = allMovies.find(m => m.id === movieId);
@@ -1340,7 +1427,6 @@ window.playFromTerabox = async function(teraboxUrl, movieTitle) {
             document.getElementById('mainContent').style.display = 'none';
             document.getElementById('movieDetail').style.display = 'block';
 
-            // Remove any existing terabox player
             const existingPlayer = document.getElementById('teraboxPlayer');
             if (existingPlayer) existingPlayer.remove();
 
@@ -1433,7 +1519,6 @@ window.playFromTerabox = async function(teraboxUrl, movieTitle) {
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('movieDetail').style.display = 'none';
             
-            // Remove terabox player when going back
             const existingPlayer = document.getElementById('teraboxPlayer');
             if (existingPlayer) existingPlayer.remove();
             
