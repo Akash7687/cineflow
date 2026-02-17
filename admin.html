@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>AkMovix - Admin Panel</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #0a0c14 0%, #1a1f2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(18, 22, 33, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .logo-text span {
+            font-size: 13px;
+            color: #8f9bb3;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            color: #8f9bb3;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            color: white;
+            border-color: transparent;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .page-title h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .page-title p {
+            color: #8f9bb3;
+            font-size: 15px;
+        }
+
+        /* Search Box */
+        .search-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 280px;
+        }
+
+        .search-box i {
+            color: #8f9bb3;
+            font-size: 16px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: #4a5578;
+        }
+
+        /* Add Button */
+        .add-btn {
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(65, 88, 208, 0.3);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: #4158D0;
+            transform: translateY(-5px);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(65, 88, 208, 0.2), rgba(200, 80, 192, 0.2));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4158D0;
+            font-size: 24px;
+        }
+
+        .stat-content h3 {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .stat-content p {
+            color: #8f9bb3;
+            font-size: 14px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 300px;
+        }
+
+        /* Movies Grid */
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .movie-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            border-color: #4158D0;
+        }
+
+        .movie-poster {
+            position: relative;
+            padding-top: 150%;
+            background: #1a1f30;
+        }
+
+        .movie-poster img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .movie-views-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(5px);
+        }
+
+        .movie-info {
+            padding: 20px;
+        }
+
+        .movie-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .terabox-badge {
+            background: linear-gradient(135deg, #FF416C, #FF4B2B);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .movie-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #8f9bb3;
+        }
+
+        .movie-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .movie-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit, .btn-delete, .btn-stats {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            color: white;
+        }
+
+        .btn-delete {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            border: 1px solid rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-stats {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Categories Grid */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover {
+            border-color: #4158D0;
+            background: rgba(65, 88, 208, 0.05);
+        }
+
+        .category-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .category-info p {
+            font-size: 13px;
+            color: #8f9bb3;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .category-actions button {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-actions button:hover {
+            background: #4158D0;
+        }
+
+        .add-category-btn {
+            background: rgba(255,255,255,0.02);
+            border: 2px dashed rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #8f9bb3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .add-category-btn:hover {
+            border-color: #4158D0;
+            color: white;
+        }
+
+        /* Users Grid */
+        .users-grid {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .user-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            align-items: center;
+        }
+
+        .user-row:last-child {
+            border-bottom: none;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 3px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #8f9bb3;
+        }
+
+        .user-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .user-stat .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .user-stat .label {
+            font-size: 11px;
+            color: #8f9bb3;
+        }
+
+        .user-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .user-status.active {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+        }
+
+        .user-status.inactive {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+        }
+
+        /* Settings */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        .settings-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .settings-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-item {
+            margin-bottom: 20px;
+        }
+
+        .settings-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #8f9bb3;
+        }
+
+        .settings-item input,
+        .settings-item select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .settings-item input:focus,
+        .settings-item select:focus {
+            outline: none;
+            border-color: #4158D0;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-picker input[type="color"] {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .backup-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .backup-btn:hover {
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1f30;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #ff4757;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .form-group label i {
+            color: #4158D0;
+            margin-right: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 15px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4158D0;
+        }
+
+        .form-group select option {
+            background: #1a1f30;
+            color: white;
+        }
+
+        /* Image Upload */
+        .image-upload-area {
+            border: 2px dashed rgba(65, 88, 208, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .image-upload-area:hover {
+            border-color: #4158D0;
+            background: rgba(65, 88, 208, 0.05);
+        }
+
+        .image-upload-area i {
+            font-size: 40px;
+            color: #4158D0;
+            margin-bottom: 10px;
+        }
+
+        .image-preview {
+            display: none;
+            position: relative;
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .upload-loading i {
+            font-size: 30px;
+            color: #4158D0;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .terabox-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 65, 108, 0.1);
+            border: 1px solid rgba(255, 65, 108, 0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-top: 10px;
+        }
+
+        .terabox-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #FF416C;
+        }
+
+        .terabox-checkbox label {
+            flex: 1;
+            margin: 0;
+            cursor: pointer;
+            color: #FF416C;
+            font-weight: 600;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(65, 88, 208, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Delete Modal */
+        .delete-modal {
+            max-width: 400px !important;
+            text-align: center;
+        }
+
+        .delete-icon {
+            font-size: 60px;
+            color: #ff4757;
+            margin-bottom: 20px;
+        }
+
+        .delete-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .delete-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-confirm {
+            background: #ff4757;
+            color: white;
+        }
+
+        .delete-cancel {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #8f9bb3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .add-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-row {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .user-avatar {
+                margin: 0 auto;
+            }
+            
+            .user-stats {
+                justify-content: center;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>AkMovix Admin</h1>
+                    <span>Movie Management</span>
+                </div>
+            </div>
+            <div class="admin-badge">
+                <i class="fas fa-shield-alt"></i> Admin Panel
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">
+                <i class="fas fa-home"></i> Dashboard
+            </button>
+            <button class="tab-btn" onclick="switchTab('movies')">
+                <i class="fas fa-film"></i> Movies
+            </button>
+            <button class="tab-btn" onclick="switchTab('categories')">
+                <i class="fas fa-tags"></i> Categories
+            </button>
+            <button class="tab-btn" onclick="switchTab('users')">
+                <i class="fas fa-users"></i> Users
+            </button>
+            <button class="tab-btn" onclick="switchTab('analytics')">
+                <i class="fas fa-chart-line"></i> Analytics
+            </button>
+            <button class="tab-btn" onclick="switchTab('settings')">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-pane active">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Dashboard</h2>
+                    <p>Welcome back, Admin!</p>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-film"></i></div>
+                        <div class="stat-content">
+                            <h3 id="totalMoviesStat">0</h3>
+                            <p>Total Movies</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-tags"></i></div>
+                        <div class="stat-content">
+                            <h3 id="totalCategoriesStat">0</h3>
+                            <p>Categories</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-content">
+                            <h3 id="totalUsersStat">0</h3>
+                            <p>Active Users</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-eye"></i></div>
+                        <div class="stat-content">
+                            <h3 id="totalViewsStat">0</h3>
+                            <p>Total Views</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3><i class="fas fa-chart-line"></i> Views Overview</h3>
+                </div>
+                <canvas id="viewsChart"></canvas>
+            </div>
+
+            <div class="page-header">
+                <h3>Top Movies</h3>
+            </div>
+            <div class="movies-grid" id="topMoviesGrid"></div>
+        </div>
+
+        <!-- Movies Tab -->
+        <div id="movies" class="tab-pane">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Movies</h2>
+                    <p>Manage your movie collection</p>
+                </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="movieSearch" placeholder="Search movies..." onkeyup="filterMovies()">
+                    </div>
+                    <button class="add-btn" onclick="openAddModal()">
+                        <i class="fas fa-plus-circle"></i> Add Movie
+                    </button>
+                </div>
+            </div>
+            <div class="movies-grid" id="moviesGrid"></div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div id="categories" class="tab-pane">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Categories</h2>
+                    <p>Manage movie categories</p>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="categorySearch" placeholder="Search categories..." onkeyup="filterCategories()">
+                </div>
+            </div>
+            <div class="categories-grid" id="categoriesGrid"></div>
+            <div class="add-category-btn" onclick="openAddCategoryModal()">
+                <i class="fas fa-plus"></i> Add New Category
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users" class="tab-pane">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Users</h2>
+                    <p>Manage app users</p>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="userSearch" placeholder="Search users..." onkeyup="filterUsers()">
+                </div>
+            </div>
+            <div class="users-grid" id="usersGrid">
+                <div class="loading">Loading users...</div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-pane">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Analytics</h2>
+                    <p>Detailed statistics</p>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-eye"></i></div>
+                        <div class="stat-content">
+                            <h3>24.5K</h3>
+                            <p>Total Views</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
+                        <div class="stat-content">
+                            <h3>3.2K</h3>
+                            <p>Unique Visitors</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-pane">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Settings</h2>
+                    <p>Configure your app</p>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3><i class="fas fa-palette"></i> Theme Settings</h3>
+                    <div class="settings-item">
+                        <label>Primary Color</label>
+                        <div class="color-picker">
+                            <input type="color" id="primaryColor" value="#4158D0" onchange="updateColor(this.value, 'primary')">
+                            <span id="primaryColorValue">#4158D0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3><i class="fas fa-globe"></i> App Settings</h3>
+                    <div class="settings-item">
+                        <label>App Name</label>
+                        <input type="text" id="appName" value="AkMovix">
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3><i class="fas fa-database"></i> Backup & Restore</h3>
+                    <div class="backup-actions">
+                        <button class="backup-btn" onclick="backupData()">
+                            <i class="fas fa-download"></i> Backup
+                        </button>
+                        <button class="backup-btn" onclick="restoreData()">
+                            <i class="fas fa-upload"></i> Restore
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Movie Modal -->
+    <div class="modal" id="movieModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Movie</h2>
+                <button class="close-btn" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="movieForm" onsubmit="saveMovie(event)">
+                <input type="hidden" id="movieId">
+
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Poster Image *</label>
+                    <div class="image-upload-area" onclick="document.getElementById('posterUpload').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload poster image</p>
+                    </div>
+                    <input type="file" id="posterUpload" accept="image/*" style="display: none;" onchange="uploadPoster(this)">
+                    
+                    <div class="image-preview" id="posterPreview">
+                        <img id="posterPreviewImg" src="" alt="Preview">
+                        <button type="button" class="remove-image" onclick="removePoster()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="upload-loading" id="posterLoading">
+                        <i class="fas fa-spinner"></i> Uploading...
+                    </div>
+                    
+                    <input type="hidden" id="posterUrl">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-heading"></i> Movie Title *</label>
+                    <input type="text" id="title" required placeholder="Enter movie title">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Category *</label>
+                    <select id="category" required>
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Description</label>
+                    <textarea id="description" placeholder="Movie description" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Duration</label>
+                    <input type="text" id="duration" placeholder="e.g., 2h 30m">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-link"></i> Movie Link *</label>
+                    <input type="url" id="movieLink" required placeholder="https://...">
+                    
+                    <div class="terabox-checkbox">
+                        <input type="checkbox" id="isTerabox">
+                        <label for="isTerabox">This is a Terabox link</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-save"></i> Save Movie
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Add Category</h2>
+                <button class="close-btn" onclick="closeCategoryModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="categoryForm" onsubmit="saveCategory(event)">
+                <input type="hidden" id="categoryId">
+                <div class="form-group">
+                    <label>Category Name</label>
+                    <input type="text" id="categoryName" required placeholder="e.g., Action">
+                </div>
+                <button type="submit" class="submit-btn">Save Category</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content delete-modal">
+            <div class="delete-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 style="margin-bottom: 10px;">Delete Item?</h3>
+            <p style="color: #8f9bb3; margin-bottom: 20px;">This action cannot be undone</p>
+            
+            <div class="delete-actions">
+                <button class="delete-btn delete-confirm" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </button>
+                <button class="delete-btn delete-cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movie Stats Modal -->
+    <div class="modal" id="statsModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Movie Statistics</h2>
+                <button class="close-btn" onclick="closeStatsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="statsContent"></div>
+        </div>
+    </div>
+
+    <!-- Firebase & ImgBB SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgl7plg8F71ceFb9a7bgCzjHpn9lHr0SU",
+            authDomain: "akmovix.firebaseapp.com",
+            projectId: "akmovix",
+            storageBucket: "akmovix.firebasestorage.app",
+            messagingSenderId: "561550827647",
+            appId: "1:561550827647:web:010a473992572485fe1f4a",
+            measurementId: "G-6P3MGPFJDH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const IMGBB_API_KEY = '9e59781daf543c4ded2f55be2a98aba7';
+        
+        let currentMovieId = null;
+        let currentDeleteId = null;
+        let deleteType = 'movie';
+        let movies = [];
+        let categories = [];
+        let users = [];
+        let viewsChart = null;
+        let analyticsChart = null;
+
+        window.addEventListener('load', init);
+
+        async function init() {
+            await loadMovies();
+            await loadCategories();
+            await loadUsers();
+            updateStats();
+            updateCharts();
+            populateCategorySelect();
+        }
+
+        async function loadMovies() {
+            try {
+                const moviesRef = collection(db, 'movies');
+                const q = query(moviesRef, orderBy('title'));
+                const querySnapshot = await getDocs(q);
+                
+                movies = [];
+                querySnapshot.forEach((doc) => {
+                    movies.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayMovies(movies);
+                displayTopMovies();
+            } catch (error) {
+                console.error('Error loading movies:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const categoriesRef = collection(db, 'categories');
+                const q = query(categoriesRef, orderBy('name'));
+                const querySnapshot = await getDocs(q);
+                
+                categories = [];
+                querySnapshot.forEach((doc) => {
+                    categories.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayCategories();
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                // If categories collection doesn't exist, create sample data
+                categories = [
+                    { id: '1', name: 'Action' },
+                    { id: '2', name: 'Romance' },
+                    { id: '3', name: 'Comedy' },
+                    { id: '4', name: 'Drama' },
+                    { id: '5', name: 'Horror' }
+                ];
+                displayCategories();
+            }
+        }
+
+        async function loadUsers() {
+            users = [
+                { id: 1, name: 'John Doe', email: 'john@example.com', moviesWatched: 45, lastActive: '2024-02-17', status: 'active' },
+                { id: 2, name: 'Jane Smith', email: 'jane@example.com', moviesWatched: 32, lastActive: '2024-02-16', status: 'active' },
+                { id: 3, name: 'Bob Johnson', email: 'bob@example.com', moviesWatched: 28, lastActive: '2024-02-15', status: 'inactive' },
+                { id: 4, name: 'Alice Brown', email: 'alice@example.com', moviesWatched: 56, lastActive: '2024-02-17', status: 'active' }
+            ];
+            displayUsers();
+        }
+
+        function displayMovies(moviesToShow) {
+            const grid = document.getElementById('moviesGrid');
+            if (!grid) return;
+            
+            if (moviesToShow.length === 0) {
+                grid.innerHTML = '<div class="loading">No movies found</div>';
+                return;
+            }
+
+            grid.innerHTML = moviesToShow.map(movie => `
+                <div class="movie-card">
+                    <div class="movie-poster">
+                        <img src="${movie.posterUrl || 'https://via.placeholder.com/300x450'}" alt="${movie.title}">
+                        <div class="movie-views-badge">
+                            <i class="fas fa-eye"></i> ${movie.views || 0}
+                        </div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title">
+                            ${movie.title}
+                            ${movie.isTerabox ? '<span class="terabox-badge"><i class="fas fa-cloud"></i> Terabox</span>' : ''}
+                        </div>
+                        <div class="movie-stats">
+                            <span><i class="fas fa-clock"></i> ${movie.duration || 'N/A'}</span>
+                            <span><i class="fas fa-tag"></i> ${movie.category || 'N/A'}</span>
+                        </div>
+                        <div class="movie-actions">
+                            <button class="btn-stats" onclick="showMovieStats('${movie.id}')">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button class="btn-edit" onclick="editMovie('${movie.id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn-delete" onclick="openDeleteModal('movie', '${movie.id}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayTopMovies() {
+            const grid = document.getElementById('topMoviesGrid');
+            if (!grid) return;
+            
+            const topMovies = [...movies].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6);
+            
+            grid.innerHTML = topMovies.map(movie => `
+                <div class="movie-card">
+                    <div class="movie-poster">
+                        <img src="${movie.posterUrl || 'https://via.placeholder.com/300x450'}" alt="${movie.title}">
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title}</div>
+                        <div class="movie-stats">
+                            <span><i class="fas fa-eye"></i> ${movie.views || 0} views</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayCategories() {
+            const grid = document.getElementById('categoriesGrid');
+            if (!grid) return;
+            
+            if (categories.length === 0) {
+                grid.innerHTML = '<div class="loading">No categories</div>';
+                return;
+            }
+
+            grid.innerHTML = categories.map(cat => `
+                <div class="category-card">
+                    <div class="category-info">
+                        <h4>${cat.name}</h4>
+                        <p>${movies.filter(m => m.category === cat.name).length} movies</p>
+                    </div>
+                    <div class="category-actions">
+                        <button onclick="editCategory('${cat.id}')"><i class="fas fa-edit"></i></button>
+                        <button onclick="openDeleteModal('category', '${cat.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateCategorySelect() {
+            const select = document.getElementById('category');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Select Category</option>' +
+                categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
+        }
+
+        function displayUsers() {
+            const grid = document.getElementById('usersGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = users.map(user => `
+                <div class="user-row">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4>${user.name}</h4>
+                        <p>${user.email}</p>
+                    </div>
+                    <div class="user-stats">
+                        <div class="user-stat">
+                            <div class="value">${user.moviesWatched}</div>
+                            <div class="label">Movies</div>
+                        </div>
+                    </div>
+                    <div class="user-status ${user.status}">
+                        ${user.status}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalMoviesStat').textContent = movies.length;
+            document.getElementById('totalCategoriesStat').textContent = categories.length;
+            document.getElementById('totalUsersStat').textContent = users.length;
+            document.getElementById('totalViewsStat').textContent = movies.reduce((sum, m) => sum + (m.views || 0), 0);
+        }
+
+        function updateCharts() {
+            const ctx1 = document.getElementById('viewsChart')?.getContext('2d');
+            if (ctx1) {
+                if (viewsChart) viewsChart.destroy();
+                viewsChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Views',
+                            data: [65, 59, 80, 81, 56, 55, 40],
+                            borderColor: '#4158D0',
+                            backgroundColor: 'rgba(65, 88, 208, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('analyticsChart')?.getContext('2d');
+            if (ctx2) {
+                if (analyticsChart) analyticsChart.destroy();
+                analyticsChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Views',
+                            data: [1200, 1900, 3000, 5000, 2000, 3000],
+                            backgroundColor: 'rgba(65, 88, 208, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        // Tab switching
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        };
+
+        // Filter functions
+        window.filterMovies = function() {
+            const searchTerm = document.getElementById('movieSearch').value.toLowerCase();
+            const filtered = movies.filter(m => m.title?.toLowerCase().includes(searchTerm));
+            displayMovies(filtered);
+        };
+
+        window.filterCategories = function() {
+            const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
+            const filtered = categories.filter(c => c.name?.toLowerCase().includes(searchTerm));
+            const grid = document.getElementById('categoriesGrid');
+            grid.innerHTML = filtered.map(cat => `
+                <div class="category-card">
+                    <div class="category-info">
+                        <h4>${cat.name}</h4>
+                        <p>${movies.filter(m => m.category === cat.name).length} movies</p>
+                    </div>
+                    <div class="category-actions">
+                        <button onclick="editCategory('${cat.id}')"><i class="fas fa-edit"></i></button>
+                        <button onclick="openDeleteModal('category', '${cat.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.filterUsers = function() {
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            const filtered = users.filter(u => u.name.toLowerCase().includes(searchTerm) || u.email.toLowerCase().includes(searchTerm));
+            displayUsers(filtered);
+        };
+
+        // Movie modal functions
+        window.openAddModal = function() {
+            resetForm();
+            document.getElementById('modalTitle').textContent = 'Add New Movie';
+            document.getElementById('movieModal').classList.add('active');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('movieModal').classList.remove('active');
+        };
+
+        window.editMovie = function(movieId) {
+            const movie = movies.find(m => m.id === movieId);
+            if (!movie) return;
+            
+            resetForm();
+            
+            document.getElementById('modalTitle').textContent = 'Edit Movie';
+            document.getElementById('movieId').value = movieId;
+            document.getElementById('title').value = movie.title || '';
+            document.getElementById('category').value = movie.category || '';
+            document.getElementById('description').value = movie.description || '';
+            document.getElementById('duration').value = movie.duration || '';
+            document.getElementById('movieLink').value = movie.movieLink || '';
+            document.getElementById('isTerabox').checked = movie.isTerabox || false;
+            
+            if (movie.posterUrl) {
+                document.getElementById('posterPreviewImg').src = movie.posterUrl;
+                document.getElementById('posterPreview').style.display = 'block';
+                document.getElementById('posterUrl').value = movie.posterUrl;
+            }
+            
+            document.getElementById('movieModal').classList.add('active');
+        };
+
+        window.saveMovie = async function(e) {
+            e.preventDefault();
+            
+            const posterUrl = document.getElementById('posterUrl').value;
+            if (!posterUrl) {
+                alert('Please upload a poster image');
+                return;
+            }
+
+            const movieData = {
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value,
+                duration: document.getElementById('duration').value,
+                movieLink: document.getElementById('movieLink').value,
+                posterUrl: posterUrl,
+                isTerabox: document.getElementById('isTerabox').checked,
+                updatedAt: new Date().toISOString()
+            };
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const movieId = document.getElementById('movieId').value;
+                
+                if (movieId) {
+                    await updateDoc(doc(db, 'movies', movieId), movieData);
+                    alert('Movie updated successfully!');
+                } else {
+                    movieData.createdAt = new Date().toISOString();
+                    movieData.views = 0;
+                    await addDoc(collection(db, 'movies'), movieData);
+                    alert('Movie added successfully!');
+                }
+                
+                closeModal();
+                await loadMovies();
+                updateStats();
+            } catch (error) {
+                console.error('Error saving movie:', error);
+                alert('Error saving movie. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Movie';
+            }
+        };
+
+        // Category modal functions
+        window.openAddCategoryModal = function() {
+            document.getElementById('categoryId').value = '';
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryModal').classList.add('active');
+        };
+
+        window.closeCategoryModal = function() {
+            document.getElementById('categoryModal').classList.remove('active');
+        };
+
+        window.editCategory = function(categoryId) {
+            const category = categories.find(c => c.id === categoryId);
+            if (!category) return;
+            
+            document.getElementById('categoryId').value = categoryId;
+            document.getElementById('categoryName').value = category.name;
+            document.getElementById('categoryModal').classList.add('active');
+        };
+
+        window.saveCategory = async function(e) {
+            e.preventDefault();
+            
+            const categoryName = document.getElementById('categoryName').value;
+            const categoryId = document.getElementById('categoryId').value;
+
+            try {
+                if (categoryId) {
+                    await updateDoc(doc(db, 'categories', categoryId), { name: categoryName });
+                    alert('Category updated successfully!');
+                } else {
+                    await addDoc(collection(db, 'categories'), { 
+                        name: categoryName,
+                        createdAt: new Date().toISOString()
+                    });
+                    alert('Category added successfully!');
+                }
+                
+                closeCategoryModal();
+                await loadCategories();
+                populateCategorySelect();
+                updateStats();
+            } catch (error) {
+                console.error('Error saving category:', error);
+                alert('Error saving category. Please try again.');
+            }
+        };
+
+        // Delete functions
+        window.openDeleteModal = function(type, id) {
+            deleteType = type;
+            currentDeleteId = id;
+            document.getElementById('deleteModal').classList.add('active');
+        };
+
+        window.closeDeleteModal = function() {
+            document.getElementById('deleteModal').classList.remove('active');
+            currentDeleteId = null;
+        };
+
+        window.confirmDelete = async function() {
+            if (!currentDeleteId) return;
+            
+            try {
+                if (deleteType === 'movie') {
+                    await deleteDoc(doc(db, 'movies', currentDeleteId));
+                    alert('Movie deleted successfully!');
+                    await loadMovies();
+                } else {
+                    await deleteDoc(doc(db, 'categories', currentDeleteId));
+                    alert('Category deleted successfully!');
+                    await loadCategories();
+                    populateCategorySelect();
+                }
+                
+                updateStats();
+                closeDeleteModal();
+            } catch (error) {
+                console.error('Error deleting:', error);
+                alert('Error deleting item. Please try again.');
+            }
+        };
+
+        // Stats modal
+        window.showMovieStats = function(movieId) {
+            const movie = movies.find(m => m.id === movieId);
+            if (!movie) return;
+
+            document.getElementById('statsContent').innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3 style="margin-bottom: 20px; color: white;">${movie.title}</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px;">
+                            <div style="font-size: 28px; font-weight: 800; color: white;">${movie.views || 0}</div>
+                            <div style="color: #8f9bb3;">Total Views</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px;">
+                            <div style="font-size: 28px; font-weight: 800; color: white;">${movie.likes || 0}</div>
+                            <div style="color: #8f9bb3;">Likes</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('statsModal').classList.add('active');
+        };
+
+        window.closeStatsModal = function() {
+            document.getElementById('statsModal').classList.remove('active');
+        };
+
+        // Image upload
+        window.uploadPoster = async function(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                document.getElementById('posterLoading').style.display = 'block';
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById('posterPreviewImg').src = data.data.url;
+                        document.getElementById('posterPreview').style.display = 'block';
+                        document.getElementById('posterUrl').value = data.data.url;
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                } catch (error) {
+                    alert('Error uploading image. Please try again.');
+                } finally {
+                    document.getElementById('posterLoading').style.display = 'none';
+                }
+            }
+        };
+
+        window.removePoster = function() {
+            document.getElementById('posterPreview').style.display = 'none';
+            document.getElementById('posterUrl').value = '';
+            document.getElementById('posterUpload').value = '';
+        };
+
+        function resetForm() {
+            document.getElementById('movieForm').reset();
+            document.getElementById('movieId').value = '';
+            document.getElementById('posterPreview').style.display = 'none';
+            document.getElementById('posterUrl').value = '';
+            document.getElementById('isTerabox').checked = false;
+        }
+
+        // Settings functions
+        window.updateColor = function(color, type) {
+            document.getElementById('primaryColorValue').textContent = color;
+            // You can implement theme color change here
+        };
+
+        window.backupData = function() {
+            const data = {
+                movies: movies,
+                categories: categories,
+                users: users,
+                backupDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `akmovix-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        window.restoreData = function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        alert('Restore feature requires backend implementation');
+                    } catch (error) {
+                        alert('Invalid backup file');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        };
+    </script>
+</body>
+</html>
